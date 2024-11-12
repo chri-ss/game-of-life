@@ -12,12 +12,15 @@ using namespace std;
 
 const int GRID_SIZE = 30;
 
+void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
+void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]);
+
 int main() {
   int option = 0;
   int gamesRun;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
-  bool gameGrid[GRID_SIZE][GRID_SIZE];
+  int gameGrid[GRID_SIZE][GRID_SIZE];
   cout << "Hello! Welcome to the game of life in CMPT 1109." << endl;
   do {
     cout << "What would you like to do?" << endl
@@ -34,10 +37,12 @@ int main() {
     switch (option) {
     case 1:
       cout << "The current starting gamestate is: " << endl;
-      fileOutput(filename);
+      csvToArray("startingGamestate.csv", gameGrid);
+      printGrid(gameGrid);
+      // fileOutput(filename);
       break;
     case 2:
-      "Please enter the name of the file you would like to load: ";
+      cout << "Please enter the name of the file you would like to load: ";
       cin >> filename; // this, or we overwrite startingGamestate.csv with the
                        // chosen file? Might be easier to just overwrite when it
                        // comes to runGame() and best gamestate so far.
@@ -45,18 +50,18 @@ int main() {
     case 3:
       // Call function, output file name to function. Do we want to try to call
       // funtion to convert csv to 2d array first and then throw the 2d array?
-      runGame(filename);
+      // runGame(filename);
       gamesRun++;
       break;
     case 4:
-      gameStats();
+      // gameStats();
       break;
     case 5:
-      gamesRun += multipleGames();
+      // gamesRun += multipleGames();
       break;
     case 6:
       cout << "The best game start so far has been: " << endl;
-      fileOutput("bestGamestate.csv");
+      // fileOutput("bestGamestate.csv");
       break;
     case 7:
       gameOver = true;
@@ -73,16 +78,36 @@ int main() {
 // rungame yearly
 void fileOutput(string filename) {}
 
-// not sure if needed, could use in fileOutput() maybe?
-bool csvToArray(string filename) {
-  ifstream infile;
-  infile.open(filename);
-}
-
 // output gamestats to console
 void gameStats() {
   ifstream infile;
   infile.open("gameStats.csv");
+}
+
+// not sure if needed, could use in fileOutput() maybe?
+void csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  ifstream infile;
+  infile.open(filename);
+
+  char current;
+  for (int row = 0; row < GRID_SIZE; row++) {
+    int col = 0;
+    while (infile >> current) {
+      if (current != ',') {
+        gameGrid[row][col] = current - '0';
+        col++;
+      }
+    }
+  }
+}
+
+void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  for (int i = 0; i < GRID_SIZE; i++) {
+    for (int j = 0; j < GRID_SIZE; j++) {
+      cout << gameGrid[i][j] << " ";
+    }
+    cout << endl;
+  }
 }
 
 // create a randomized 30x30 csv file at startingGamestate.csv based on the
@@ -102,7 +127,7 @@ int multipleGames() {
   cin >> probability;
   for (int i = numberOfGames; i > 0; i--) {
     randomGamestate(probability);
-    runGame(filename);
+    // runGame(filename);
   }
   return numberOfGames;
 }
