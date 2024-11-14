@@ -152,22 +152,42 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
 // create a randomized 30x30 csv file at startingGamestate.csv based on the
 // input probability 2 for loops of 30, gen random 1 or 0 and input to slot 900
 // times?
-void randomGamestate(float probability) {}
+void randomGamestate(float probability) {
+  ofstream outfile;
+  outfile.open("startingGamestate.csv");
 
-// should be completed
+  // Generate a grid based on the probability and save it to the file
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
+      int cell = (rand() / (RAND_MAX + 1.0)) < probability ? 1 : 0;
+      outfile << cell;
+      if (col < GRID_SIZE - 1) {
+        outfile << ",";
+      }
+    }
+    outfile << endl;
+  }
+
+  outfile.close();
+}
+
 int multipleGames() {
-  int probability;
   int numberOfGames;
-  string filename = "startingGamestate.csv";
-  cout << "How many times would you like to play the game?";
+  float probability;
+  cout << "How many times would you like to play the game? ";
   cin >> numberOfGames;
   cout << "What probability would you like for each cell to be alive? (1 = all "
-          "alive, 0.5 = half alive)";
+          "alive, 0.5 = half alive): ";
   cin >> probability;
-  for (int i = numberOfGames; i > 0; i--) {
+
+  for (int i = 0; i < numberOfGames; i++) {
     randomGamestate(probability);
-    // runGame(filename);
+    cout << "Playing game " << i + 1 << "..." << endl;
+    int gameGrid[GRID_SIZE][GRID_SIZE];
+    csvToArray("startingGamestate.csv", gameGrid);
+    runGame(gameGrid); 
   }
+  
   return numberOfGames;
 }
 
@@ -223,4 +243,5 @@ int testCell(bool isAlive, int row, int col,
     }
   }
   return 0;
+
 }
