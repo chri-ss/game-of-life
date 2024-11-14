@@ -125,14 +125,25 @@ bool csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
 }
 
 void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
-  for (int i = 0; i < GRID_SIZE; i++) {
-    for (int j = 0; j < GRID_SIZE; j++) {
-      cout << gameGrid[i][j] << " ";
+  // top of grid
+  cout << ' ';
+  for (int cell = 0; cell < GRID_SIZE; cell++) {
+    cout << "_ ";
+  }
+
+  // middle
+  cout << endl;
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
+      if (gameGrid[row][col]) {
+        cout << "|#";
+      } else {
+        cout << "|_";
+      }
     }
-    cout << endl;
+    cout << "|" << endl;
   }
 }
-
 // create a randomized 30x30 csv file at startingGamestate.csv based on the
 // input probability 2 for loops of 30, gen random 1 or 0 and input to slot 900
 // times?
