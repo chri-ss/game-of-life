@@ -61,6 +61,7 @@ int main() {
           cin >> confirmGame;
           if (confirmGame == 'y') {
             cout << "new game state loaded" << endl;
+
             cout << filename << endl;
           }
         } while (confirmGame != 'y' && confirmGame != 'n');
@@ -145,12 +146,6 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
       }
     }
     cout << "|" << endl;
-  }
-
-  // bottom
-  cout << ' ';
-  for (int cell = 0; cell < GRID_SIZE; cell++) {
-    cout << "_ ";
   }
 }
 
