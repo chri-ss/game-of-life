@@ -12,12 +12,13 @@ using namespace std;
 
 const int GRID_SIZE = 30;
 
-void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
+bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]);
 
 int main() {
   int option = 0;
   int gamesRun;
+  int year;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
   int gameGrid[GRID_SIZE][GRID_SIZE];
@@ -46,6 +47,25 @@ int main() {
       cin >> filename; // this, or we overwrite startingGamestate.csv with the
                        // chosen file? Might be easier to just overwrite when it
                        // comes to runGame() and best gamestate so far.
+
+      year = 0;
+      // if the file read is good
+      if (csvToArray(filename, gameGrid)) {
+        printGrid(gameGrid);
+        cout << endl
+             << "is this the game you would like to play? (y/n)" << endl;
+        char confirmGame;
+        do {
+          cin >> confirmGame;
+          if (confirmGame == 'y') {
+            cout << "new game state loaded" << endl;
+            cout << filename << endl;
+          }
+        } while (confirmGame != 'y' && confirmGame != 'n');
+      } else {
+        cout << "that file doesn't exist" << endl;
+        cout << filename << endl;
+      }
       break;
     case 3:
       // Call function, output file name to function. Do we want to try to call
@@ -85,20 +105,23 @@ void gameStats() {
 }
 
 // not sure if needed, could use in fileOutput() maybe?
-void csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
+bool csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
   ifstream infile;
   infile.open(filename);
-
-  char current;
-  for (int row = 0; row < GRID_SIZE; row++) {
-    int col = 0;
-    while (infile >> current) {
-      if (current != ',') {
-        gameGrid[row][col] = current - '0';
-        col++;
+  if (infile.good()) {
+    char current;
+    for (int row = 0; row < GRID_SIZE; row++) {
+      int col = 0;
+      while (infile >> current) {
+        if (current != ',') {
+          gameGrid[row][col] = current - '0';
+          col++;
+        }
       }
     }
+    return true;
   }
+  return false;
 }
 
 void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
