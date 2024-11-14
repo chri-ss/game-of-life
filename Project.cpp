@@ -1,6 +1,6 @@
 /*
 Author: CHRISTOPHER CRESSWELL, Ammar Chherawala, Austin Middleton
-Student ID: xxxx, xxxx, 300407891
+Student ID: 300400078, xxxx, 300407891
 Purpose: Game of Life Project
 Date: Nov 11, 2024
 */
@@ -12,11 +12,14 @@ using namespace std;
 
 const int GRID_SIZE = 30;
 
-void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
-void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]);
+bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
+void printGrid(const int[GRID_SIZE][GRID_SIZE]);
+void runGame(int[GRID_SIZE][GRID_SIZE]);
+int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
 
 int main() {
   int option = 0;
+  int year;
   int gamesRun;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
@@ -37,7 +40,7 @@ int main() {
     switch (option) {
     case 1:
       cout << "The current starting gamestate is: " << endl;
-      csvToArray("startingGamestate.csv", gameGrid);
+      csvToArray(filename, gameGrid);
       printGrid(gameGrid);
       // fileOutput(filename);
       break;
@@ -46,11 +49,32 @@ int main() {
       cin >> filename; // this, or we overwrite startingGamestate.csv with the
                        // chosen file? Might be easier to just overwrite when it
                        // comes to runGame() and best gamestate so far.
+
+      year = 0;
+      // if the file read is good
+      if (csvToArray(filename, gameGrid)) {
+        printGrid(gameGrid);
+        cout << endl
+             << "is this the game you would like to play? (y/n)" << endl;
+        char confirmGame;
+        do {
+          cin >> confirmGame;
+          if (confirmGame == 'y') {
+            cout << "new game state loaded" << endl;
+
+            cout << filename << endl;
+          }
+        } while (confirmGame != 'y' && confirmGame != 'n');
+      } else {
+        cout << "that file doesn't exist" << endl;
+        cout << filename << endl;
+      }
       break;
     case 3:
       // Call function, output file name to function. Do we want to try to call
       // funtion to convert csv to 2d array first and then throw the 2d array?
-      // runGame(filename);
+      csvToArray(filename, gameGrid);
+      runGame(gameGrid);
       gamesRun++;
       break;
     case 4:
@@ -85,28 +109,43 @@ void gameStats() {
 }
 
 // not sure if needed, could use in fileOutput() maybe?
-void csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
+bool csvToArray(const string &filename, int gameGrid[GRID_SIZE][GRID_SIZE]) {
   ifstream infile;
   infile.open(filename);
-
-  char current;
-  for (int row = 0; row < GRID_SIZE; row++) {
-    int col = 0;
-    while (infile >> current) {
-      if (current != ',') {
-        gameGrid[row][col] = current - '0';
-        col++;
+  if (infile.good()) {
+    char current;
+    for (int row = 0; row < GRID_SIZE; row++) {
+      int col = 0;
+      while (infile >> current) {
+        if (current != ',') {
+          gameGrid[row][col] = current - '0';
+          col++;
+        }
       }
     }
+    return true;
   }
+  return false;
 }
 
 void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
-  for (int i = 0; i < GRID_SIZE; i++) {
-    for (int j = 0; j < GRID_SIZE; j++) {
-      cout << gameGrid[i][j] << " ";
+  // top of grid
+  cout << ' ';
+  for (int cell = 0; cell < GRID_SIZE; cell++) {
+    cout << "_ ";
+  }
+
+  // middle
+  cout << endl;
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
+      if (gameGrid[row][col]) {
+        cout << "|#";
+      } else {
+        cout << "|_";
+      }
     }
-    cout << endl;
+    cout << "|" << endl;
   }
 }
 
@@ -136,4 +175,52 @@ int multipleGames() {
 // final year results (how many cells alive, dead, how many years played),
 // record to gamestats, if best alive at end, copy startingGamestate.csv to
 // bestGamestate.csv
-void runGame(string filename) {}
+void runGame(int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  // while not halting
+  int tempGrid[GRID_SIZE][GRID_SIZE];
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
+      tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
+    }
+  }
+
+  // copy back into original gameGrid
+  for (int row = 0; row < GRID_SIZE; row++) {
+    for (int col = 0; col < GRID_SIZE; col++) {
+      gameGrid[row][col] = tempGrid[row][col];
+    }
+  }
+  printGrid(gameGrid);
+}
+
+int testCell(bool isAlive, int row, int col,
+             const int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  if (row != 0 && col != 0 && row != GRID_SIZE - 1 && col != GRID_SIZE - 1) {
+    int aliveNeighbourCount = 0;
+    if (gameGrid[row - 1][col - 1] || gameGrid[row - 1][col] ||
+        gameGrid[row - 1][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col - 1] || gameGrid[row + 1][col] ||
+        gameGrid[row + 1][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    if (isAlive && aliveNeighbourCount < 2) {
+      return 0;
+    } else if (isAlive && aliveNeighbourCount == 2 ||
+               aliveNeighbourCount == 3) {
+      return 1;
+    } else if (isAlive && aliveNeighbourCount > 3) {
+      return 0;
+    } else if (!isAlive && aliveNeighbourCount > 3) {
+      return 1;
+    }
+  }
+  return 0;
+}
