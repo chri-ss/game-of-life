@@ -274,14 +274,65 @@ int testCell(bool isAlive, int row, int col,
     }
     // somewhere in the first column
   } else if (row != 0 && col == 0) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col] == 0) {
+      aliveNeighbourCount++;
+    }
+    for (int i = row - 1; i <= row + 1; i++) {
+      if (gameGrid[i][col + 1]) {
+        aliveNeighbourCount++;
+      }
+    }
     // somewhere in the last column
   } else if (row != 0 && col == GRID_SIZE - 1) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col]) {
+      aliveNeighbourCount++;
+    }
+    for (int i = row - 1; i <= row + 1; i++) {
+      if (gameGrid[i][col - 1]) {
+        aliveNeighbourCount++;
+      }
+    }
     // bottom left corner
   } else if (row == GRID_SIZE - 1 && col == 0) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row - 1][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
+    }
     // bottom right corner
   } else if (row == GRID_SIZE - 1 && col == GRID_SIZE - 1) {
+    if (gameGrid[row - 1][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
     // somewhere in the last row
   } else if (row == GRID_SIZE - 1 && col != 0 && col != GRID_SIZE - 1) {
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row - 1][i]) {
+        aliveNeighbourCount++;
+      }
+    }
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
+    }
   }
   if (isAlive && aliveNeighbourCount < 2) {
     return 0;
