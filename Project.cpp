@@ -4,9 +4,11 @@ Student ID: 300400078, xxxx, 300407891
 Purpose: Game of Life Project
 Date: Nov 11, 2024
 */
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <thread>
 
 using namespace std;
 
@@ -14,12 +16,12 @@ const int GRID_SIZE = 30;
 
 bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int[GRID_SIZE][GRID_SIZE]);
-void runGame(int[GRID_SIZE][GRID_SIZE]);
+void runGame(int[GRID_SIZE][GRID_SIZE], int &);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
 
 int main() {
   int option = 0;
-  int year;
+  int year = 0;
   int gamesRun;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
@@ -74,7 +76,8 @@ int main() {
       // Call function, output file name to function. Do we want to try to call
       // funtion to convert csv to 2d array first and then throw the 2d array?
       csvToArray(filename, gameGrid);
-      runGame(gameGrid);
+      runGame(gameGrid, year);
+      year = 0;
       gamesRun++;
       break;
     case 4:
@@ -185,7 +188,7 @@ int multipleGames() {
     cout << "Playing game " << i + 1 << "..." << endl;
     int gameGrid[GRID_SIZE][GRID_SIZE];
     csvToArray("startingGamestate.csv", gameGrid);
-    runGame(gameGrid);
+    // runGame(gameGrid);
   }
 
   return numberOfGames;
@@ -195,9 +198,11 @@ int multipleGames() {
 // final year results (how many cells alive, dead, how many years played),
 // record to gamestats, if best alive at end, copy startingGamestate.csv to
 // bestGamestate.csv
-void runGame(int gameGrid[GRID_SIZE][GRID_SIZE]) {
+void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
   // while not haltig
-  for (int i = 0; i < 10; i++) {
+  bool sameGeneration = false;
+  bool extinction = false;
+  while (year <= 50 && !sameGeneration && !extinction) {
     int tempGrid[GRID_SIZE][GRID_SIZE];
     for (int row = 0; row < GRID_SIZE; row++) {
       for (int col = 0; col < GRID_SIZE; col++) {
@@ -205,13 +210,36 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE]) {
       }
     }
 
+    // check for no change between generations
+    sameGeneration = true;
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        if (gameGrid[row][col] != tempGrid[row][col]) {
+          sameGeneration = false;
+        }
+      }
+    }
+
+
     // copy back into original gameGrid
     for (int row = 0; row < GRID_SIZE; row++) {
       for (int col = 0; col < GRID_SIZE; col++) {
         gameGrid[row][col] = tempGrid[row][col];
       }
     }
+
+    // check for extinction (all cells dead)
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        if (gameGrid[row][col]) {
+          extinction = false;
+        }
+      }
+    }
+
     // system("clear");
+    year++;
+    this_thread::sleep_for(chrono::milliseconds(100));
     printGrid(gameGrid);
   }
 }
