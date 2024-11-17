@@ -185,9 +185,9 @@ int multipleGames() {
     cout << "Playing game " << i + 1 << "..." << endl;
     int gameGrid[GRID_SIZE][GRID_SIZE];
     csvToArray("startingGamestate.csv", gameGrid);
-    runGame(gameGrid); 
+    runGame(gameGrid);
   }
-  
+
   return numberOfGames;
 }
 
@@ -196,30 +196,35 @@ int multipleGames() {
 // record to gamestats, if best alive at end, copy startingGamestate.csv to
 // bestGamestate.csv
 void runGame(int gameGrid[GRID_SIZE][GRID_SIZE]) {
-  // while not halting
-  int tempGrid[GRID_SIZE][GRID_SIZE];
-  for (int row = 0; row < GRID_SIZE; row++) {
-    for (int col = 0; col < GRID_SIZE; col++) {
-      tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
+  // while not haltig
+  while (true) {
+    int tempGrid[GRID_SIZE][GRID_SIZE];
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
+      }
     }
-  }
 
-  // copy back into original gameGrid
-  for (int row = 0; row < GRID_SIZE; row++) {
-    for (int col = 0; col < GRID_SIZE; col++) {
-      gameGrid[row][col] = tempGrid[row][col];
+    // copy back into original gameGrid
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        gameGrid[row][col] = tempGrid[row][col];
+      }
     }
+    system("clear");
+    printGrid(gameGrid);
   }
-  printGrid(gameGrid);
 }
 
 int testCell(bool isAlive, int row, int col,
              const int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  int aliveNeighbourCount = 0;
+  // cells in middle of grid
   if (row != 0 && col != 0 && row != GRID_SIZE - 1 && col != GRID_SIZE - 1) {
-    int aliveNeighbourCount = 0;
-    if (gameGrid[row - 1][col - 1] || gameGrid[row - 1][col] ||
-        gameGrid[row - 1][col + 1]) {
-      aliveNeighbourCount++;
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row - 1][i]) {
+        aliveNeighbourCount++;
+      }
     }
     if (gameGrid[row][col - 1]) {
       aliveNeighbourCount++;
@@ -227,21 +232,36 @@ int testCell(bool isAlive, int row, int col,
     if (gameGrid[row][col + 1]) {
       aliveNeighbourCount++;
     }
-    if (gameGrid[row + 1][col - 1] || gameGrid[row + 1][col] ||
-        gameGrid[row + 1][col + 1]) {
-      aliveNeighbourCount++;
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row + 1][i]) {
+        aliveNeighbourCount++;
+      }
     }
-    if (isAlive && aliveNeighbourCount < 2) {
-      return 0;
-    } else if (isAlive && aliveNeighbourCount == 2 ||
-               aliveNeighbourCount == 3) {
-      return 1;
-    } else if (isAlive && aliveNeighbourCount > 3) {
-      return 0;
-    } else if (!isAlive && aliveNeighbourCount > 3) {
-      return 1;
-    }
+    //  top left corner
+  } else if (row == 0 && col == 0) {
+    // top right corner
+  } else if (row == 0 && col == GRID_SIZE - 1) {
+    // somewhere in the top row
+  } else if (row == 0 && col != 0 && col != GRID_SIZE - 1) {
+    // somewhere in the first column
+  } else if (row != 0 && col == 0) {
+    // somewhere in the last column
+  } else if (row != 0 && col == GRID_SIZE - 1) {
+    // bottom left corner
+  } else if (row == GRID_SIZE - 1 && col == 0) {
+    // bottom right corner
+  } else if (row == GRID_SIZE - 1 && col == GRID_SIZE - 1) {
+    // somewhere in the last row
+  } else if (row == GRID_SIZE - 1 && col != 0 && col != GRID_SIZE - 1) {
+  }
+  if (isAlive && aliveNeighbourCount < 2) {
+    return 0;
+  } else if (isAlive && aliveNeighbourCount == 2 || aliveNeighbourCount == 3) {
+    return 1;
+  } else if (isAlive && aliveNeighbourCount > 3) {
+    return 0;
+  } else if (!isAlive && aliveNeighbourCount > 3) {
+    return 1;
   }
   return 0;
-
 }
