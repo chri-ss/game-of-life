@@ -1,6 +1,6 @@
 /*
 Author: CHRISTOPHER CRESSWELL, Ammar Chherawala, Austin Middleton
-Student ID: 300400078, xxxx, 300407891
+Student ID: 300400078, 300400622, 300407891
 Purpose: Game of Life Project
 Date: Nov 11, 2024
 */
