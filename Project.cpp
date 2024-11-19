@@ -4,9 +4,14 @@ Student ID: 300400078, 300400622, 300407891
 Purpose: Game of Life Project
 Date: Nov 11, 2024
 */
+#include <chrono>
 #include <fstream>
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
+#include <thread>
+#include <time.h>
 
 using namespace std;
 
@@ -14,12 +19,14 @@ const int GRID_SIZE = 30;
 
 bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int[GRID_SIZE][GRID_SIZE]);
-void runGame(int[GRID_SIZE][GRID_SIZE]);
+void runGame(int[GRID_SIZE][GRID_SIZE], int &);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
+void saveGameStats(int, int, int);
+int multipleGames();
 
 int main() {
   int option = 0;
-  int year;
+  int year = 50;
   int gamesRun;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
@@ -50,7 +57,7 @@ int main() {
                        // chosen file? Might be easier to just overwrite when it
                        // comes to runGame() and best gamestate so far.
 
-      year = 0;
+      year = 50;
       // if the file read is good
       if (csvToArray(filename, gameGrid)) {
         printGrid(gameGrid);
@@ -71,17 +78,16 @@ int main() {
       }
       break;
     case 3:
-      // Call function, output file name to function. Do we want to try to call
-      // funtion to convert csv to 2d array first and then throw the 2d array?
       csvToArray(filename, gameGrid);
-      runGame(gameGrid);
+      runGame(gameGrid, year);
+      year = 50;
       gamesRun++;
       break;
     case 4:
       // gameStats();
       break;
     case 5:
-      // gamesRun += multipleGames();
+      gamesRun += multipleGames();
       break;
     case 6:
       cout << "The best game start so far has been: " << endl;
@@ -98,24 +104,20 @@ int main() {
   return 0;
 }
 
-// output current gamestate to console, use in case 1, best gamestate, and
-// rungame yearly
-void fileOutput(string filename) {}
-
 // output gamestats to console
 void gameStats() {
-    ifstream infile("gameStats.csv");
-    string line;
+  ifstream infile("gameStats.csv");
+  string line;
 
-    if (infile.is_open()) {
-        cout << "Game Statistics (All Games):" << endl;
-        while (getline(infile, line)) {
-            cout << line << endl;
-        }
-        infile.close();
-    } else {
-        cout << "Error: Unable to open gameStats.csv for reading." << endl;
+  if (infile.is_open()) {
+    cout << "Game Statistics (All Games):" << endl;
+    while (getline(infile, line)) {
+      cout << line << endl;
     }
+    infile.close();
+  } else {
+    cout << "Error: Unable to open gameStats.csv for reading." << endl;
+  }
 }
 
 // not sure if needed, could use in fileOutput() maybe?
@@ -165,6 +167,7 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
 void randomGamestate(float probability) {
   ofstream outfile;
   outfile.open("startingGamestate.csv");
+  float cell;
 
   // Generate a grid based on the probability and save it to the file
   for (int row = 0; row < GRID_SIZE; row++) {
@@ -184,6 +187,7 @@ void randomGamestate(float probability) {
 int multipleGames() {
   int numberOfGames;
   float probability;
+  int year = 50;
   cout << "How many times would you like to play the game? ";
   cin >> numberOfGames;
   cout << "What probability would you like for each cell to be alive? (1 = all "
@@ -195,9 +199,10 @@ int multipleGames() {
     cout << "Playing game " << i + 1 << "..." << endl;
     int gameGrid[GRID_SIZE][GRID_SIZE];
     csvToArray("startingGamestate.csv", gameGrid);
-    runGame(gameGrid); 
+    runGame(gameGrid, year);
+    year = 50;
   }
-  
+
   return numberOfGames;
 }
 
@@ -205,72 +210,98 @@ int multipleGames() {
 // final year results (how many cells alive, dead, how many years played),
 // record to gamestats, if best alive at end, copy startingGamestate.csv to
 // bestGamestate.csv
-void runGame(int gameGrid[GRID_SIZE][GRID_SIZE]) {
-  // while not halting
-  int tempGrid[GRID_SIZE][GRID_SIZE];
-    int yearsRun = 0;
-    int aliveCount = 0;
-    int deadCount = 0;
-    bool hasChanged = true;
+void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
+  // while not haltig
+  bool sameGeneration = false;
+  bool extinction = false;
 
-    while (hasChanged) {
-        hasChanged = false;
-        aliveCount = 0;
-        deadCount = 0;
+  int yearsRun = 0;
+  int aliveCount = 0;
+  int deadCount = 0;
+  bool hasChanged = true;
 
-        for (int row = 0; row < GRID_SIZE; row++) {
-          for (int col = 0; col < GRID_SIZE; col++) {
-            tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
+  while (year >= 0 && !sameGeneration && !extinction && hasChanged) {
+    int tempGrid[GRID_SIZE][GRID_SIZE];
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
 
-                // Count alive/dead cells for stats
-                if (tempGrid[row][col] == 1) {
-                    aliveCount++;
-                } else {
-                    deadCount++;
-                }
-
-                // Check if there was any change in cell state
-                if (tempGrid[row][col] != gameGrid[row][col]) {
-                    hasChanged = true;
-                }
-          }
+        // Count alive/dead cells for stats
+        if (tempGrid[row][col] == 1) {
+          aliveCount++;
+        } else {
+          deadCount++;
         }
 
-  // copy back into original gameGrid
-  for (int row = 0; row < GRID_SIZE; row++) {
-    for (int col = 0; col < GRID_SIZE; col++) {
-      gameGrid[row][col] = tempGrid[row][col];
-    }
-  }
-  printGrid(gameGrid);
-  yearsRun++;
-
-  // Optional: Break if maximum years to prevent infinite runs
-      if (yearsRun >= 1000) { // For example, a max year limit
-          break;
+        // Check if there was any change in cell state
+        if (tempGrid[row][col] != gameGrid[row][col]) {
+          hasChanged = true;
+        }
       }
     }
-  // Save the final stats to a file
-  saveGameStats(yearsRun, aliveCount, deadCount);
+
+    // check for no change between generations
+    sameGeneration = true;
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        if (gameGrid[row][col] != tempGrid[row][col]) {
+          sameGeneration = false;
+        }
+      }
+    }
+
+    // copy back into original gameGrid
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        gameGrid[row][col] = tempGrid[row][col];
+      }
+    }
+
+    // check for extinction (all cells dead)
+    for (int row = 0; row < GRID_SIZE; row++) {
+      for (int col = 0; col < GRID_SIZE; col++) {
+        if (gameGrid[row][col]) {
+          extinction = false;
+        }
+      }
+    }
+
+    // system("clear");
+    year--;
+    this_thread::sleep_for(chrono::milliseconds(100));
+    printGrid(gameGrid);
+    yearsRun++;
+
+    // Optional: Break if maximum years to prevent infinite runs
+    if (yearsRun >= 1000) { // For example, a max year limit
+      break;
+    }
+    // Save the final stats to a file
+    saveGameStats(yearsRun, aliveCount, deadCount);
+  }
 }
 void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
-    ofstream outfile("gameStats.csv"); // Open file in default mode, which is write mode
-    if (outfile.is_open()) {
-        outfile << "Years: " << yearsRun << ", Alive: " << aliveCount << ", Dead: " << deadCount << endl;
-        outfile.close();
-        cout << "Game statistics saved to gameStats.csv" << endl;
-    } else {
-        cout << "Error: Unable to open gameStats.csv." << endl;
-    }
+  ofstream outfile(
+      "gameStats.csv"); // Open file in default mode, which is write mode
+  if (outfile.is_open()) {
+    outfile << "Years: " << yearsRun << ", Alive: " << aliveCount
+            << ", Dead: " << deadCount << endl;
+    outfile.close();
+    cout << "Game statistics saved to gameStats.csv" << endl;
+  } else {
+    cout << "Error: Unable to open gameStats.csv." << endl;
+  }
 }
 
 int testCell(bool isAlive, int row, int col,
              const int gameGrid[GRID_SIZE][GRID_SIZE]) {
+  int aliveNeighbourCount = 0;
+  // cells in middle of grid
   if (row != 0 && col != 0 && row != GRID_SIZE - 1 && col != GRID_SIZE - 1) {
-    int aliveNeighbourCount = 0;
-    if (gameGrid[row - 1][col - 1] || gameGrid[row - 1][col] ||
-        gameGrid[row - 1][col + 1]) {
-      aliveNeighbourCount++;
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row - 1][i]) {
+        aliveNeighbourCount++;
+      }
     }
     if (gameGrid[row][col - 1]) {
       aliveNeighbourCount++;
@@ -278,21 +309,117 @@ int testCell(bool isAlive, int row, int col,
     if (gameGrid[row][col + 1]) {
       aliveNeighbourCount++;
     }
-    if (gameGrid[row + 1][col - 1] || gameGrid[row + 1][col] ||
-        gameGrid[row + 1][col + 1]) {
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row + 1][i]) {
+        aliveNeighbourCount++;
+      }
+    }
+    //  top left corner
+  } else if (row == 0 && col == 0) {
+    if (gameGrid[row][col + 1]) {
       aliveNeighbourCount++;
     }
-    if (isAlive && aliveNeighbourCount < 2) {
-      return 0;
-    } else if (isAlive && aliveNeighbourCount == 2 ||
-               aliveNeighbourCount == 3) {
-      return 1;
-    } else if (isAlive && aliveNeighbourCount > 3) {
-      return 0;
-    } else if (!isAlive && aliveNeighbourCount > 3) {
-      return 1;
+    if (gameGrid[row + 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    // top right corner
+  } else if (row == 0 && col == GRID_SIZE - 1) {
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    // somewhere in the top row
+  } else if (row == 0 && col != 0 && col != GRID_SIZE - 1) {
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row + 1][i]) {
+        aliveNeighbourCount++;
+      }
+    }
+    // somewhere in the first column
+  } else if (row != 0 && col == 0) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col] == 0) {
+      aliveNeighbourCount++;
+    }
+    for (int i = row - 1; i <= row + 1; i++) {
+      if (gameGrid[i][col + 1]) {
+        aliveNeighbourCount++;
+      }
+    }
+    // somewhere in the last column
+  } else if (row != 0 && col == GRID_SIZE - 1) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row + 1][col]) {
+      aliveNeighbourCount++;
+    }
+    for (int i = row - 1; i <= row + 1; i++) {
+      if (gameGrid[i][col - 1]) {
+        aliveNeighbourCount++;
+      }
+    }
+    // bottom left corner
+  } else if (row == GRID_SIZE - 1 && col == 0) {
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row - 1][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
+    }
+    // bottom right corner
+  } else if (row == GRID_SIZE - 1 && col == GRID_SIZE - 1) {
+    if (gameGrid[row - 1][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row - 1][col]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    // somewhere in the last row
+  } else if (row == GRID_SIZE - 1 && col != 0 && col != GRID_SIZE - 1) {
+    for (int i = col - 1; i <= col + 1; i++) {
+      if (gameGrid[row - 1][i]) {
+        aliveNeighbourCount++;
+      }
+    }
+    if (gameGrid[row][col - 1]) {
+      aliveNeighbourCount++;
+    }
+    if (gameGrid[row][col + 1]) {
+      aliveNeighbourCount++;
     }
   }
-  return 0;
-
+  if (isAlive && aliveNeighbourCount < 2) {
+    return 0;
+  } else if (isAlive && aliveNeighbourCount == 2 || aliveNeighbourCount == 3) {
+    return 1;
+  } else if (isAlive && aliveNeighbourCount > 3) {
+    return 0;
+  } else if (!isAlive && aliveNeighbourCount == 3) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
