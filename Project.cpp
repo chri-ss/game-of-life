@@ -7,6 +7,7 @@ Date: Nov 11, 2024
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -23,6 +24,7 @@ void runGame(int[GRID_SIZE][GRID_SIZE], int &);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
 void saveGameStats(int, int, int);
 int multipleGames();
+double getRandomNumber();
 
 int main() {
   int option = 0;
@@ -160,6 +162,11 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
     cout << "|" << endl;
   }
 }
+double getRandomNumber() {
+  random_device myRNG;
+  uniform_real_distribution<> dist(0, 1);
+  return dist(myRNG);
+}
 
 // create a randomized 30x30 csv file at startingGamestate.csv based on the
 // input probability 2 for loops of 30, gen random 1 or 0 and input to slot 900
@@ -167,12 +174,12 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
 void randomGamestate(float probability) {
   ofstream outfile;
   outfile.open("startingGamestate.csv");
-  float cell;
+  // float cell;
 
   // Generate a grid based on the probability and save it to the file
   for (int row = 0; row < GRID_SIZE; row++) {
     for (int col = 0; col < GRID_SIZE; col++) {
-      int cell = (rand() / (RAND_MAX + 1.0)) < probability ? 1 : 0;
+      int cell = (getRandomNumber()) < probability ? 1 : 0;
       outfile << cell;
       if (col < GRID_SIZE - 1) {
         outfile << ",";
