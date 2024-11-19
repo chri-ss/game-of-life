@@ -1,16 +1,16 @@
 /*
 Author: CHRISTOPHER CRESSWELL, Ammar Chherawala, Austin Middleton
-Student ID: 300400078, xxxx, 300407891
+Student ID: 300400078, 300400622, 300407891
 Purpose: Game of Life Project
 Date: Nov 11, 2024
 */
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <thread>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <thread>
 #include <time.h>
 
 using namespace std;
@@ -21,6 +21,7 @@ bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int[GRID_SIZE][GRID_SIZE]);
 void runGame(int[GRID_SIZE][GRID_SIZE], int &);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
+void saveGameStats(int, int, int);
 int multipleGames();
 
 int main() {
@@ -105,8 +106,18 @@ int main() {
 
 // output gamestats to console
 void gameStats() {
-  ifstream infile;
-  infile.open("gameStats.csv");
+  ifstream infile("gameStats.csv");
+  string line;
+
+  if (infile.is_open()) {
+    cout << "Game Statistics (All Games):" << endl;
+    while (getline(infile, line)) {
+      cout << line << endl;
+    }
+    infile.close();
+  } else {
+    cout << "Error: Unable to open gameStats.csv for reading." << endl;
+  }
 }
 
 // not sure if needed, could use in fileOutput() maybe?
@@ -203,11 +214,29 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
   // while not haltig
   bool sameGeneration = false;
   bool extinction = false;
-  while (year >= 0 && !sameGeneration && !extinction) {
+
+  int yearsRun = 0;
+  int aliveCount = 0;
+  int deadCount = 0;
+  bool hasChanged = true;
+
+  while (year >= 0 && !sameGeneration && !extinction && hasChanged) {
     int tempGrid[GRID_SIZE][GRID_SIZE];
     for (int row = 0; row < GRID_SIZE; row++) {
       for (int col = 0; col < GRID_SIZE; col++) {
         tempGrid[row][col] = testCell(gameGrid[row][col], row, col, gameGrid);
+
+        // Count alive/dead cells for stats
+        if (tempGrid[row][col] == 1) {
+          aliveCount++;
+        } else {
+          deadCount++;
+        }
+
+        // Check if there was any change in cell state
+        if (tempGrid[row][col] != gameGrid[row][col]) {
+          hasChanged = true;
+        }
       }
     }
 
@@ -220,7 +249,6 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
         }
       }
     }
-
 
     // copy back into original gameGrid
     for (int row = 0; row < GRID_SIZE; row++) {
@@ -242,6 +270,26 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
     year--;
     this_thread::sleep_for(chrono::milliseconds(100));
     printGrid(gameGrid);
+    yearsRun++;
+
+    // Optional: Break if maximum years to prevent infinite runs
+    if (yearsRun >= 1000) { // For example, a max year limit
+      break;
+    }
+    // Save the final stats to a file
+    saveGameStats(yearsRun, aliveCount, deadCount);
+  }
+}
+void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
+  ofstream outfile(
+      "gameStats.csv"); // Open file in default mode, which is write mode
+  if (outfile.is_open()) {
+    outfile << "Years: " << yearsRun << ", Alive: " << aliveCount
+            << ", Dead: " << deadCount << endl;
+    outfile.close();
+    cout << "Game statistics saved to gameStats.csv" << endl;
+  } else {
+    cout << "Error: Unable to open gameStats.csv." << endl;
   }
 }
 
