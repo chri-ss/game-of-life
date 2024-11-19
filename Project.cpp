@@ -9,6 +9,9 @@ Date: Nov 11, 2024
 #include <iostream>
 #include <string>
 #include <thread>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -18,10 +21,11 @@ bool csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int[GRID_SIZE][GRID_SIZE]);
 void runGame(int[GRID_SIZE][GRID_SIZE], int &);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
+int multipleGames();
 
 int main() {
   int option = 0;
-  int year = 0;
+  int year = 50;
   int gamesRun;
   bool gameOver = false;
   string filename = "startingGamestate.csv";
@@ -52,7 +56,7 @@ int main() {
                        // chosen file? Might be easier to just overwrite when it
                        // comes to runGame() and best gamestate so far.
 
-      year = 0;
+      year = 50;
       // if the file read is good
       if (csvToArray(filename, gameGrid)) {
         printGrid(gameGrid);
@@ -73,18 +77,16 @@ int main() {
       }
       break;
     case 3:
-      // Call function, output file name to function. Do we want to try to call
-      // funtion to convert csv to 2d array first and then throw the 2d array?
       csvToArray(filename, gameGrid);
       runGame(gameGrid, year);
-      year = 0;
+      year = 50;
       gamesRun++;
       break;
     case 4:
       // gameStats();
       break;
     case 5:
-      // gamesRun += multipleGames();
+      gamesRun += multipleGames();
       break;
     case 6:
       cout << "The best game start so far has been: " << endl;
@@ -100,10 +102,6 @@ int main() {
   } while (!gameOver);
   return 0;
 }
-
-// output current gamestate to console, use in case 1, best gamestate, and
-// rungame yearly
-void fileOutput(string filename) {}
 
 // output gamestats to console
 void gameStats() {
@@ -158,6 +156,7 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
 void randomGamestate(float probability) {
   ofstream outfile;
   outfile.open("startingGamestate.csv");
+  float cell;
 
   // Generate a grid based on the probability and save it to the file
   for (int row = 0; row < GRID_SIZE; row++) {
@@ -177,6 +176,7 @@ void randomGamestate(float probability) {
 int multipleGames() {
   int numberOfGames;
   float probability;
+  int year = 50;
   cout << "How many times would you like to play the game? ";
   cin >> numberOfGames;
   cout << "What probability would you like for each cell to be alive? (1 = all "
@@ -188,7 +188,8 @@ int multipleGames() {
     cout << "Playing game " << i + 1 << "..." << endl;
     int gameGrid[GRID_SIZE][GRID_SIZE];
     csvToArray("startingGamestate.csv", gameGrid);
-    // runGame(gameGrid);
+    runGame(gameGrid, year);
+    year = 50;
   }
 
   return numberOfGames;
@@ -202,7 +203,7 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
   // while not haltig
   bool sameGeneration = false;
   bool extinction = false;
-  while (year <= 50 && !sameGeneration && !extinction) {
+  while (year >= 0 && !sameGeneration && !extinction) {
     int tempGrid[GRID_SIZE][GRID_SIZE];
     for (int row = 0; row < GRID_SIZE; row++) {
       for (int col = 0; col < GRID_SIZE; col++) {
@@ -238,7 +239,7 @@ void runGame(int gameGrid[GRID_SIZE][GRID_SIZE], int &year) {
     }
 
     // system("clear");
-    year++;
+    year--;
     this_thread::sleep_for(chrono::milliseconds(100));
     printGrid(gameGrid);
   }
