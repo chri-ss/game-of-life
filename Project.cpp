@@ -325,7 +325,7 @@ void bestGamestateTest(int isAlive){
   string line;
   int recordInt;
   fstream record;
-  record.open(currentRecord);
+  record.open(/*currentRecord*/bestGamestateFile);
   getline(record, line);
   recordInt = atoi(line.c_str());
   if (recordInt < isAlive){
@@ -346,7 +346,7 @@ void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
             << ", Dead: " << deadCount << endl;
     outfile.close();
     cout << "Game statistics saved to gameStats.csv" << endl;
-    //bestGamestateTest(aliveCount);
+    bestGamestateTest(aliveCount);
   } else {
     cout << "Error: Unable to open gameStats.csv." << endl;
   }
