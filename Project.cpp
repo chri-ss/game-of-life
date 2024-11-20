@@ -8,11 +8,9 @@ Date: Nov 11, 2024
 #include <fstream>
 #include <iostream>
 #include <random>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <thread>
-#include <time.h>
 
 using namespace std;
 
@@ -20,7 +18,7 @@ const int GRID_SIZE = 30;
 const int YEAR_MAX = 50;
 const float DEFAULT_PROBABILITY = 0.5;
 const string bestGamestateFile = "bestGamestate.csv";
-const string filename = "startingGamestate.csv";
+const string filename = "initialSetup.csv";
 const string currentRecord = "mostAlive.txt";
 
 void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
