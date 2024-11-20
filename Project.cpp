@@ -8,11 +8,9 @@ Date: Nov 11, 2024
 #include <fstream>
 #include <iostream>
 #include <random>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <thread>
-#include <time.h>
 
 using namespace std;
 
@@ -20,7 +18,7 @@ const int GRID_SIZE = 30;
 const int YEAR_MAX = 50;
 const float DEFAULT_PROBABILITY = 0.5;
 const string bestGamestateFile = "bestGamestate.csv";
-const string filename = "startingGamestate.csv";
+const string filename = "initialSetup.csv";
 const string currentRecord = "mostAlive.txt";
 
 void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
@@ -327,7 +325,7 @@ void bestGamestateTest(int isAlive){
   string line;
   int recordInt;
   fstream record;
-  record.open(currentRecord);
+  record.open(/*currentRecord*/bestGamestateFile);
   getline(record, line);
   recordInt = atoi(line.c_str());
   if (recordInt < isAlive){
@@ -348,7 +346,7 @@ void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
             << ", Dead: " << deadCount << endl;
     outfile.close();
     cout << "Game statistics saved to gameStats.csv" << endl;
-    //bestGamestateTest(aliveCount);
+    bestGamestateTest(aliveCount);
   } else {
     cout << "Error: Unable to open gameStats.csv." << endl;
   }
