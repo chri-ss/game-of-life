@@ -95,7 +95,6 @@ int main() {
       break;
     case 6:
       cout << "The best game start so far has been: " << endl;
-      // printfile(bestGamestateFile);
       fileVerify(bestGamestateFile);
       break;
     case 7:
@@ -125,7 +124,7 @@ void gameStats() {
   }
 }
 
-// not sure if needed, could use in fileOutput() maybe?
+// read from a csv file of 1s and 0s into a 2d array
 void csvToArray(const string &file, int gameGrid[GRID_SIZE][GRID_SIZE]) {
   ifstream infile;
   infile.open(file);
@@ -191,6 +190,7 @@ void printfile(const string file) {
   printGrid(gameGrid);
 }
 
+// load from one csv into another (for tracking the best game state)
 void loadNewFile(string newFile, string oldFile) {
   ifstream infile;
   ofstream outfile;
@@ -206,13 +206,11 @@ void loadNewFile(string newFile, string oldFile) {
   outfile.close();
 }
 
-// create a randomized 30x30 csv file at startingGamestate.csv based on the
-// input probability 2 for loops of 30, gen random 1 or 0 and input to slot 900
-// times?
+// create a randomized 30x30 csv file at initialSetup.csv based on the
+// input probability
 void randomGamestate(float probability) {
   ofstream outfile;
   outfile.open(filename);
-  // float cell;
 
   // Generate a grid based on the probability and save it to the file
   for (int row = 0; row < GRID_SIZE; row++) {
@@ -223,13 +221,12 @@ void randomGamestate(float probability) {
         outfile << ",";
       }
     }
-    // outfile << endl;
-    outfile << '\n';
+    outfile << endl;
   }
-
   outfile.close();
 }
 
+// run the simulation multiple times with given probability
 int multipleGames(int &gamesRun) {
   int numberOfGames;
   float probability;
@@ -244,16 +241,14 @@ int multipleGames(int &gamesRun) {
     cout << "Playing game " << i + 1 << "..." << endl;
     runGame(gamesRun);
   }
-
   return numberOfGames;
 }
 
-// copy startingGamestate.csv to activeGamestate.csv, run game, keep track of
+// copy initialSetup.csv to , 2d array, run game, keep track of
 // final year results (how many cells alive, dead, how many years played),
-// record to gamestats, if best alive at end, copy startingGamestate.csv to
+// record to gamestats, if best alive at end, copy initialSetup.csv to
 // bestGamestate.csv
 void runGame(int &gamesRun) {
-  // while not haltig
   int gameGrid[GRID_SIZE][GRID_SIZE];
   bool sameGeneration = false;
   bool extinction = false;
@@ -313,7 +308,6 @@ void runGame(int &gamesRun) {
       }
     }
 
-    // system("clear");
     year--;
     this_thread::sleep_for(chrono::milliseconds(100));
     printGrid(gameGrid);
@@ -348,6 +342,7 @@ void bestGamestateTest(int isAlive) {
   record.close();
 }
 
+// save the game stats to a file
 void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
   ofstream outfile;
   outfile.open("gameStats.csv", std::ios_base::app);
