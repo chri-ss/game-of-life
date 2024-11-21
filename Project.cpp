@@ -19,15 +19,14 @@ const int YEAR_MAX = 50;
 const float DEFAULT_PROBABILITY = 0.5;
 const string bestGamestateFile = "bestGamestate.csv";
 const string filename = "initialSetup.csv";
-const string currentRecord = "mostAlive.txt";
 
 void csvToArray(const string &, int[GRID_SIZE][GRID_SIZE]);
 void csvToArray(int[GRID_SIZE][GRID_SIZE]);
 void printGrid(const int[GRID_SIZE][GRID_SIZE]);
-void runGame(int& gamesRun);
+void runGame(int &gamesRun);
 int testCell(bool, int, int, const int[GRID_SIZE][GRID_SIZE]);
 void saveGameStats(int, int, int);
-int multipleGames(int& gamesRun);
+int multipleGames(int &gamesRun);
 double getRandomNumber();
 bool fileVerify(string file);
 void randomGamestate(float probability);
@@ -44,9 +43,13 @@ int main() {
   cout << "Hello! Welcome to the game of life in CMPT 1109." << endl;
   do {
     cout << "What would you like to do?" << endl
-         << "To generate or display the initial state for the game of life press 1" << endl
-         << "To load a new initial state from a CSV file into memory press 2" << endl
-         << "To play the game of life with the current initial state press 3" << endl
+         << "To generate or display the initial state for the game of life "
+            "press 1"
+         << endl
+         << "To load a new initial state from a CSV file into memory press 2"
+         << endl
+         << "To play the game of life with the current initial state press 3"
+         << endl
          << "To report summary statistics on all games played press 4" << endl
          << "To randomly play the game multiple times press 5" << endl
          << "To output the best initial board press 6" << endl
@@ -55,12 +58,13 @@ int main() {
     switch (option) {
     case 1:
       fileVerify(filename);
-      cout << "Would you like to randomly generate a new one? (1 = Yes, 2 = No)" << endl;
+      cout << "Would you like to randomly generate a new one? (1 = Yes, 2 = No)"
+           << endl;
       do {
         cin >> option;
         if (option == 1) {
           randomGamestate(DEFAULT_PROBABILITY);
-        } 
+        }
       } while (option != 1 && option != 2);
       break;
     case 2:
@@ -68,7 +72,8 @@ int main() {
       cin >> loadFile;
       if (fileVerify(loadFile)) {
         cout << endl
-             << "Is this the game you would like to play? (1 = Yes, 2 = No)" << endl;
+             << "Is this the game you would like to play? (1 = Yes, 2 = No)"
+             << endl;
         do {
           cin >> option;
           if (option == 1) {
@@ -90,7 +95,8 @@ int main() {
       break;
     case 6:
       cout << "The best game start so far has been: " << endl;
-      printfile(bestGamestateFile);
+      // printfile(bestGamestateFile);
+      fileVerify(bestGamestateFile);
       break;
     case 7:
       gameOver = true;
@@ -120,7 +126,7 @@ void gameStats() {
 }
 
 // not sure if needed, could use in fileOutput() maybe?
-void csvToArray(const string& file, int gameGrid[GRID_SIZE][GRID_SIZE]) {
+void csvToArray(const string &file, int gameGrid[GRID_SIZE][GRID_SIZE]) {
   ifstream infile;
   infile.open(file);
   if (infile.good()) {
@@ -141,7 +147,7 @@ void csvToArray(int gameGrid[GRID_SIZE][GRID_SIZE]) {
   csvToArray(filename, gameGrid);
 }
 
-bool fileVerify(string file){
+bool fileVerify(string file) {
   ifstream infile;
   infile.open(file);
   if (infile.good()) {
@@ -173,19 +179,19 @@ void printGrid(const int gameGrid[GRID_SIZE][GRID_SIZE]) {
     cout << "|" << endl;
   }
 }
-  double getRandomNumber() {
+double getRandomNumber() {
   random_device myRNG;
   uniform_real_distribution<> dist(0, 1);
   return dist(myRNG);
 }
 
-void printfile(const string file){
+void printfile(const string file) {
   int gameGrid[GRID_SIZE][GRID_SIZE];
   csvToArray(file, gameGrid);
   printGrid(gameGrid);
 }
 
-void loadNewFile(string newFile, string oldFile){
+void loadNewFile(string newFile, string oldFile) {
   ifstream infile;
   ofstream outfile;
   string line;
@@ -217,13 +223,14 @@ void randomGamestate(float probability) {
         outfile << ",";
       }
     }
-    outfile << endl;
+    // outfile << endl;
+    outfile << '\n';
   }
 
   outfile.close();
 }
 
-int multipleGames(int& gamesRun) {
+int multipleGames(int &gamesRun) {
   int numberOfGames;
   float probability;
   cout << "How many times would you like to play the game? ";
@@ -256,7 +263,7 @@ void runGame(int &gamesRun) {
   int deadCount = 0;
   bool hasChanged = true;
 
-  if (!fileVerify(filename)){
+  if (!fileVerify(filename)) {
     cout << "ERROR: No gamestate file loaded.";
   }
   csvToArray(gameGrid);
@@ -321,22 +328,25 @@ void runGame(int &gamesRun) {
   saveGameStats(yearsRun, aliveCount, deadCount);
 }
 
-void bestGamestateTest(int isAlive){
+void bestGamestateTest(int isAlive) {
   string line;
-  int recordInt;
+  int recordInt = 0;
   fstream record;
-  record.open(/*currentRecord*/bestGamestateFile);
-  getline(record, line);
-  recordInt = atoi(line.c_str());
-  if (recordInt < isAlive){
+  record.open(bestGamestateFile);
+  for (int i = 0; i < GRID_SIZE; i++) {
+    getline(record, line);
+    for (int j = 0; j < line.size(); j++) {
+      if (line[j] != ',') {
+        recordInt += line[j] - '0';
+      }
+    }
+  }
+  if (recordInt < isAlive) {
     loadNewFile(filename, bestGamestateFile);
     record << isAlive;
-  }  
+  }
   record.close();
 }
-
-
-
 
 void saveGameStats(int yearsRun, int aliveCount, int deadCount) {
   ofstream outfile;
@@ -472,7 +482,8 @@ int testCell(bool isAlive, int row, int col,
   }
   if (isAlive && aliveNeighbourCount < 2) {
     return 0;
-  } else if ((isAlive && aliveNeighbourCount == 2) || aliveNeighbourCount == 3) {
+  } else if ((isAlive && aliveNeighbourCount == 2) ||
+             aliveNeighbourCount == 3) {
     return 1;
   } else if (isAlive && aliveNeighbourCount > 3) {
     return 0;
